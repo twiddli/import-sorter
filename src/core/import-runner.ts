@@ -154,9 +154,24 @@ export class SimpleImportRunner implements ImportRunner {
     const isRemoveUnusedDefaultImports = this.configurationProvider.getConfiguration()
       .sortConfiguration.removeUnusedDefaultImports;
     const sortResultClonned = cloneDeep(sortResult);
-    let unusedImportElements: ImportElement[] = [];
+    const unusedImportElements: ImportElement[] = [];
+
+    if (!this.ignoreModules) {
+      this.ignoreModules = this.configurationProvider
+        .getConfiguration()
+        .sortConfiguration.ignoreUnusedImportsFrom.map((x) => new RegExp(x));
+    }
+
     sortResultClonned.groups.forEach((gr) => {
       gr.elements = gr.elements.filter((el) => {
+        if (this.ignoreModules.some((x) => x.test(el.moduleSpecifierName))) {
+          console.warn(
+            "ignoring unused import from module",
+            el.moduleSpecifierName
+          );
+          return true;
+        }
+
         //side effect import
         if (!el.hasFromKeyWord) {
           return true;
@@ -192,44 +207,21 @@ export class SimpleImportRunner implements ImportRunner {
       return !gr.elements.length;
     });
 
-    if (!this.ignoreModules) {
-      this.ignoreModules = this.configurationProvider
-        .getConfiguration()
-        .sortConfiguration.ignoreUnusedImportsFrom.map((x) => new RegExp(x));
-    }
-
-    unusedImportElements = unusedImportElements.filter((u) => {
-      if (
-        this.configurationProvider.getConfiguration().sortConfiguration
-          .ignoreUnusedImportsFrom
-      ) {
-        console.warn(
-          "testing",
-          u.moduleSpecifierName,
-          this.configurationProvider.getConfiguration().sortConfiguration
-            .ignoreUnusedImportsFrom
-        );
-      } else {
-        console.warn(
-          "ignoreUnusedImportsFrom",
-          u.moduleSpecifierName,
-          this.configurationProvider.getConfiguration().sortConfiguration
-            .ignoreUnusedImportsFrom
-        );
-      }
-      if (this.ignoreModules.some((x) => x.test(u.moduleSpecifierName))) {
-        console.warn(
-          "ignoring unused import from module",
-          u.moduleSpecifierName
-        );
-        return false;
-      }
-      return true;
-    });
-
     return {
       groups: sortResultClonned.groups,
-      toRemove: [...unusedImportElements, ...sortResultClonned.duplicates],
+      toRemove: [
+        ...unusedImportElements.filter((u) => {
+          if (this.ignoreModules.some((x) => x.test(u.moduleSpecifierName))) {
+            console.warn(
+              "ignoring unused import from module",
+              u.moduleSpecifierName
+            );
+            return false;
+          }
+          return true;
+        }),
+        ...sortResultClonned.duplicates,
+      ],
     };
   }
 
