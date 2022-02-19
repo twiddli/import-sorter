@@ -11,6 +11,12 @@ Forked with the following improvements/changes:
 - Add new option `ignoreUnusedImportsFrom` ignore removing of unused imports from specified packages
 - Switched to yarn
 
+## Installing
+
+Uninstall the original extenstion.
+
+Download vsix file from Releases and install extension from vsix file in VS Code
+
 ## Examples
 
 Different sort types in file:
