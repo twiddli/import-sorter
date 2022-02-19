@@ -3,6 +3,14 @@
 Extension which sorts TypeScript imports according to the configuration provided. The configuration defaults follow ESLint sort-imports rules.
 Configuration supports regex functions to set sorting priority and rules. The extension can work with prettier as long as the configuration settings of both are aligned.
 
+# This is a fork
+
+Forked with the following improvements/changes:
+
+- Support for type imports
+- Add new option `ignoreUnusedImportsFrom` ignore removing of unused imports from specified packages
+- Switched to yarn
+
 ## Examples
 
 Different sort types in file:
